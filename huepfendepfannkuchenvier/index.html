@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hüpfende Pfannkuchen - grüne Monster</title>
+    <style>
+        /* Allgemeine Stile für das gesamte Dokument */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('kran_905.jpg');
+            background-size: cover;
+            background-position: center;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Stile für das Spiel-Fenster */
+        .game {
+            position: relative;
+            height: 200px;
+            border: 2px solid #333;
+            background-color: #141717
+           
+        }
+
+        /* Stile für das Spielfiguren-Element */
+        #character {
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            width: 30px;
+            height: 110px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+/* Stil für den Kopf */
+.head {
+    width: 50px;
+    height: 50px;
+    background-color: yellow;
+    border-radius: 50%;
+    margin-bottom: 10px; /* Höherer Abstand zum nächsten Element */
+    position: relative;
+}
+
+/* Stile für die Augen */
+.eyes {
+    width: 10px;
+    height: 10px;
+    background-color: black;
+    border-radius: 50%;
+    position: absolute;
+    top: 20%; /* Höhere Position für die Augen im Kopf */
+}
+
+.eye-left {
+    left: 20%; /* Etwas weiter links */
+}
+
+.eye-right {
+    right: 20%; /* Etwas weiter rechts */
+}
+
+/* Stil für den Mund */
+.mouth {
+    width: 20px;
+    height: 8px;
+    background-color: black;
+    border-radius: 50%;
+    position: absolute;
+    top: 40%; /* Höhere Position für den Mund im Kopf */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+
+        /* Stil für den Oberkörper */
+        .body {
+            width: 30px;
+            height: 20px;
+            background-color: rgb(218, 152, 218);
+            border-radius: 40px;
+            margin-bottom: 5px;
+        }
+
+        /* Stil für die Füße */
+        .feet {
+            width: 20px;
+            height: 10px;
+            background-color: rgb(128, 0, 0);
+            border-radius: 5px;
+        }
+
+        /* Stile für das Hindernis-Element und den Stern */
+        .obstacle {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background-color: #66cc66;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(102, 204, 102, 0.8);
+        }
+
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #ffff66;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            box-shadow: 0 0 10px rgba(255, 255, 102, 0.8);
+        }
+
+        #score, #timer {
+    font-size: 24px;
+    text-align: center;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold; /* Fettgedruckte Schrift */
+}
+
+  
+    </style>
+</head>
+
+<body>
+    <h5>Zählen der Pfannkuchen im Score</h5>
+    <div id="score">Score: 0</div>
+    <div id="timer">Time: 3:00</div>
+    
+    <h4>Hüpfende Pfannkuchen - grüne Monster</h4>
+    <h4>Schulhof-Programmmierung.de</h4>
+    <div class="game">
+        <div id="character">
+            <div class="head">
+                <div class="eyes eye-left"></div>
+                <div class="eyes eye-right"></div>
+                <div class="mouth"></div>
+            </div>
+            <div class="body"></div>
+            <div class="feet"></div>
+        </div>
+        
+    </div>
+</body>
+
+</html>
+
+ 
+
+    <script>
+        // JavaScript-Code für das Spiel
+
+        // Charakter und Spielsteuerung
+        const character = document.getElementById('character');
+        let leftArrow = false;
+        let rightArrow = false;
+        let upArrow = false;
+        let isJumping = false;
+        let gameSpeed = 10; // Geschwindigkeits-Level einstellen 
+        let gravity = 0.9;
+        let score = 0;
+        let time = 180; // 3 Minuten in Sekunden
+
+        // Event-Listener für Tastatureingaben
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                leftArrow = true;
+            }
+            if (event.key === 'ArrowRight') {
+                rightArrow = true;
+            }
+            if (event.key === 'ArrowUp') {
+                upArrow = true;
+            }
+        });
+
+        document.addEventListener('keyup', function(event) {
+            if (event.key === 'ArrowLeft') {
+                leftArrow = false;
+            }
+            if (event.key === 'ArrowRight') {
+                rightArrow = false;
+            }
+            if (event.key === 'ArrowUp') {
+                upArrow = false;
+            }
+        });
+
+        // Bewegung des Charakters und Springen
+        function move() {
+            if (leftArrow) {
+                let leftPosition = parseInt(window.getComputedStyle(character).getPropertyValue('left'));
+                character.style.left = `${leftPosition - 5}px`;
+            }
+            if (rightArrow) {
+                let leftPosition = parseInt(window.getComputedStyle(character).getPropertyValue('left'));
+                character.style.left = `${leftPosition + 5}px`;
+            }
+            if (upArrow && !isJumping) {
+                isJumping = true;
+                jump();
+            }
+        }
+
+        // Springfunktion
+        function jump() {
+            let count = 0;
+            let jumpInterval = setInterval(function () {
+                let characterTop = parseInt(window.getComputedStyle(character).getPropertyValue('bottom'));
+
+                if (characterTop < 200) {
+                    character.style.bottom = `${characterTop + 5}px`;
+                } else {
+                    clearInterval(jumpInterval);
+                    let downInterval = setInterval(function () {
+                        let characterBottom = parseInt(window.getComputedStyle(character).getPropertyValue('bottom'));
+                        if (characterBottom > 0) {
+                            character.style.bottom = `${characterBottom - 5}px`;
+                        } else {
+                            clearInterval(downInterval);
+                            isJumping = false;
+                        }
+                    }, 20);
+                }
+            }, 20);
+        }
+
+        // Generieren von Hindernissen
+        function generateObstacles() {
+            let obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            obstacle.style.left = '95%';
+            obstacle.style.bottom = '20px';
+            obstacle.style.backgroundColor = 'green';
+            obstacle.style.animation = 'obstacleMovement 2s linear';
+            obstacle.style.animationPlayState = 'running';
+            document.querySelector('.game').appendChild(obstacle);
+        }
+
+        // Bewegung der Hindernisse und Stern-Sammelfunktion
+        function moveObstacles() {
+            let obstacles = document.querySelectorAll('.obstacle');
+            obstacles.forEach((obstacle) => {
+                let obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
+                if (obstacleLeft > 0) {
+                    obstacle.style.left = `${obstacleLeft - gameSpeed}px`;
+                    collectStars();
+                } else {
+                    obstacle.remove();
+                }
+            });
+        }
+
+        // Sammeln der Sterne und Aktualisieren des Punktestands
+        function collectStars() {
+            let characterRect = character.getBoundingClientRect();
+            let stars = document.querySelectorAll('.star');
+
+            stars.forEach((star) => {
+                let starRect = star.getBoundingClientRect();
+
+                if (isColliding(characterRect, starRect)) {
+                    star.remove();
+                    score++;
+                    document.getElementById('score').innerText = `Score: ${score}`;
+                }
+            });
+        }
+
+        // Kollisionsüberprüfung zwischen Charakter und Hindernissen/Sternen
+        function isColliding(char, obstacle) {
+            let charRect = char;
+            let obstacleRect = obstacle;
+
+            return !(
+                charRect.top > obstacleRect.bottom ||
+                charRect.right < obstacleRect.left ||
+                charRect.bottom < obstacleRect.top ||
+                charRect.left > obstacleRect.right
+            );
+        }
+
+        // Generieren von Sternen
+        function generateStars() {
+            let star = document.createElement('div');
+            star.classList.add('star');
+            let randomPosition = Math.floor(Math.random() * 95);
+            star.style.left = randomPosition + '%';
+            star.style.bottom = '90%';
+            document.querySelector('.game').appendChild(star);
+        }
+
+        // Intervalle für Spielaktionen - Schnelligkeit
+        setInterval(move, 10);
+        setInterval(generateObstacles, 2000);
+        setInterval(moveObstacles, 10);
+        setInterval(generateStars, 3000);
+
+        // Timerfunktion
+        const timerDisplay = document.getElementById('timer');
+        const interval = setInterval(updateTimer, 1000);
+
+        function updateTimer() {
+            const minutes = Math.floor(time / 60);
+            let seconds = time % 60;
+
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            timerDisplay.textContent = `Time: ${minutes}:${seconds}`;
+
+            if (time > 0) {
+                time--;
+            } else {
+                endGame();
+                clearInterval(interval);
+            }
+        }
+
+        // Spielende-Funktion
+        function endGame() {
+            clearInterval(interval);
+            document.removeEventListener('keydown', function(event) {
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+                    return
+                }
+            });
+
+            alert('Game Over! Your score: ' + score); // Meldung über Spielende und Punktzahl
+
+            // Neues Spiel starten, wenn Enter-Taste gedrückt wird
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    location.reload(); // Seite neu laden, um das Spiel zurückzusetzen
+                }
+            });
+        }
+
+       
+        
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
